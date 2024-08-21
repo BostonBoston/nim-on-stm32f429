@@ -92,12 +92,12 @@ proc NVIC_SystemReset*()
 when MPU_PRESENT: # im just riffing here
   const mpuHeader = "mpu_armv7.h"
 
-  type 
-    ARM_MPU_Region* {.importc: "ARM_MPU_Region_t", header: mpuHeader.} = object 
-      rbar*: uint32
-      rasr*: uint32
+  type
+    ARM_MPU_Region* {.importc: "ARM_MPU_Region_t", header: mpuHeader, bycopy.} = object
+      rbar* {.importc: "RBAR".}: uint32
+      rasr* {.importc: "RASR".}: uint32
 
-  proc ARM_MPU_Enable*(mpuControl: uint32)
+  proc ARM_MPU_Enable*(mpuControl: uint32) 
     {.importc:"$1", header: mpuHeader.}
 
   proc ARM_MPU_Disable*()

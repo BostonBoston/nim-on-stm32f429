@@ -18448,6 +18448,15 @@ proc `HSION=`*(r: var RCC_CR_Fields, val: bool) {.inline.} =
   tmp.setMask((val.uint32 shl 0).masked(0 .. 0))
   r = tmp.RCC_CR_Fields
 
+func PLLQ*(r: RCC_PLLCFGR_Fields): uint32 {.inline.} =
+  r.uint32.bitsliced(24 .. 27).uint32
+
+proc `PLLQ=`*(r: var RCC_PLLCFGR_Fields, val: uint32) {.inline.} =
+  var tmp = r.uint32
+  tmp.clearMask(24 .. 27)
+  tmp.setMask((val.uint32 shl 24).masked(24 .. 27))
+  r = tmp.RCC_PLLCFGR_Fields
+
 func PLLQ3*(r: RCC_PLLCFGR_Fields): bool {.inline.} =
   r.uint32.bitsliced(27 .. 27).bool
 
@@ -18493,6 +18502,15 @@ proc `PLLSRC=`*(r: var RCC_PLLCFGR_Fields, val: bool) {.inline.} =
   tmp.setMask((val.uint32 shl 22).masked(22 .. 22))
   r = tmp.RCC_PLLCFGR_Fields
 
+func PLLP*(r: RCC_PLLCFGR_Fields): uint32 {.inline.} =
+  r.uint32.bitsliced(16 .. 17).uint32
+
+proc `PLLP=`*(r: var RCC_PLLCFGR_Fields, val: uint32) {.inline.} =
+  var tmp = r.uint32
+  tmp.clearMask(16 .. 17)
+  tmp.setMask((val.uint32 shl 16).masked(16 .. 17))
+  r = tmp.RCC_PLLCFGR_Fields
+
 func PLLP1*(r: RCC_PLLCFGR_Fields): bool {.inline.} =
   r.uint32.bitsliced(17 .. 17).bool
 
@@ -18509,6 +18527,15 @@ proc `PLLP0=`*(r: var RCC_PLLCFGR_Fields, val: bool) {.inline.} =
   var tmp = r.uint32
   tmp.clearMask(16 .. 16)
   tmp.setMask((val.uint32 shl 16).masked(16 .. 16))
+  r = tmp.RCC_PLLCFGR_Fields
+
+func PLLN*(r: RCC_PLLCFGR_Fields): uint32 {.inline.} =
+  r.uint32.bitsliced(16 .. 17).uint32
+
+proc `PLLN=`*(r: var RCC_PLLCFGR_Fields, val: uint32) {.inline.} =
+  var tmp = r.uint32
+  tmp.clearMask(6 .. 14)
+  tmp.setMask((val.uint32 shl 6).masked(6 .. 14))
   r = tmp.RCC_PLLCFGR_Fields
 
 func PLLN8*(r: RCC_PLLCFGR_Fields): bool {.inline.} =
@@ -18590,6 +18617,15 @@ proc `PLLN0=`*(r: var RCC_PLLCFGR_Fields, val: bool) {.inline.} =
   var tmp = r.uint32
   tmp.clearMask(6 .. 6)
   tmp.setMask((val.uint32 shl 6).masked(6 .. 6))
+  r = tmp.RCC_PLLCFGR_Fields
+
+func PLLM*(r: RCC_PLLCFGR_Fields): uint32 {.inline.} =
+  r.uint32.bitsliced(0 .. 5).uint32
+
+proc `PLLM=`*(r: var RCC_PLLCFGR_Fields, val: uint32) {.inline.} =
+  var tmp = r.uint32
+  tmp.clearMask(0 .. 5)
+  tmp.setMask((val.uint32 shl 0).masked(0 .. 15))
   r = tmp.RCC_PLLCFGR_Fields
 
 func PLLM5*(r: RCC_PLLCFGR_Fields): bool {.inline.} =
@@ -18727,11 +18763,23 @@ proc `HPRE=`*(r: var RCC_CFGR_Fields, val: uint32) {.inline.} =
   tmp.setMask((val shl 4).masked(4 .. 7))
   r = tmp.RCC_CFGR_Fields
 
+func SWS*(r: RCC_CFGR_Fields): uint32 {.inline.} =
+  r.uint32.bitsliced(2 .. 3).uint32  
+
 func SWS1*(r: RCC_CFGR_Fields): bool {.inline.} =
   r.uint32.bitsliced(3 .. 3).bool
 
 func SWS0*(r: RCC_CFGR_Fields): bool {.inline.} =
   r.uint32.bitsliced(2 .. 2).bool
+
+func SW*(r: RCC_CFGR_Fields): uint32 {.inline.} =
+  r.uint32.bitsliced(0 .. 1).uint32
+
+proc `SW=`*(r: var RCC_CFGR_Fields, val: uint32) {.inline.} =
+  var tmp = r.uint32
+  tmp.clearMask(0 .. 1)
+  tmp.setMask((val.uint32 shl 0).masked(0 .. 1))
+  r = tmp.RCC_CFGR_Fields
 
 func SW1*(r: RCC_CFGR_Fields): bool {.inline.} =
   r.uint32.bitsliced(1 .. 1).bool

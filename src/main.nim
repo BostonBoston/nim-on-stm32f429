@@ -1,6 +1,9 @@
 import device/[core_cm4, device]
+import driver/[stm32f4_hal_gpio]
 import startup
 import volatile
+
+{.experimental: "strictDefs".}
 
 #compileStartup 
 #I dont have a startup.c, startup object file will be passed in compile flags
@@ -10,8 +13,8 @@ const
   HALTickFreq1khz = 1
 
 var 
-  tickFreq = HALTickFreq1khz
-  sysClockFreq = StartingSystemCoreClock
+  tickFreq: uint32 = HALTickFreq1khz
+  sysClockFreq: uint32 = StartingSystemCoreClock
   uwTickPrio: uint32 = 1 shl NVIC_PRIO_BITS
 
 proc HAL_NVIC_SetPriority(irqn: IRQn, preemptPriority, subPriority: uint32) =
@@ -19,7 +22,7 @@ proc HAL_NVIC_SetPriority(irqn: IRQn, preemptPriority, subPriority: uint32) =
   NVIC_SetPriority(irqn, NVIC_EncodePriority(priorityGroup, preemptPriority, subPriority))
 
 proc HAL_initTick(tickPriority: uint32): uint32 =
-  discard SysTick_Config(sysClockFreq/(1000/tickFreq))
+  discard SysTick_Config(uint32 sysClockFreq.int/((1000/tickFreq.int).int))
   HAL_NVIC_SetPriority(irqSysTick, tickPriority, 0)
 
 proc HAL_MspInit() =
@@ -39,7 +42,7 @@ proc initHAL() =
     it.PRFTEN = true
 
   NVIC_SetPriorityGrouping(0x03) # prio grouping 4
-  HAL_initTick(0)
+  discard HAL_initTick(0)
   #HAL_MspInit() # dont know if this is needed or ran yet
 
 
@@ -51,26 +54,35 @@ proc HAL_IncTick() {.exportc.} =
 proc SysTick_Handler() {.exportc.} = 
   HAL_IncTick()
 
-proc HAL_RCC_GetSysClockFreq(): uint32
+proc HAL_RCC_GetSysClockFreq(): uint32 =
   case RCC.CFGR.read().SWS:
     of 0b00: # HSI
       result = 16000000 # HSI
-      break
     of 0b01: # HSE
       result = 25000000 # HSE
-      break
     of 0b10: # PLL
       let pllvco: uint32
       let pllm = RCC.PLLCFGR.read().PLLM
       if RCC.PLLCFGR.read().PLLSRC != false:
-        pllvco = uint32 (25000000 * RCC.PLLCFGR.read().PLLN) / PLLM
+        pllvco = uint32 (25000000 * RCC.PLLCFGR.read().PLLN).int / PLLM.int
       else:
-        pllvco = uint32 (16000000 * RCC.PLLCFGR.read().PLLN) / PLLM
+        pllvco = uint32 (16000000 * RCC.PLLCFGR.read().PLLN).int / PLLM.int
       let pllp = RCC.PLLCFGR.read().PLLP
-      result = pllvco/pllp
+      result = uint32 pllvco.int/pllp.int
     else: result = 16000000
 
-proc HAL_RCC_MCOConfig(rcc_mcox, rcc_mcosrc, rcc_mcodiv) =
+proc HAL_RCC_GPIO_CLK_ENABLE() =
+  RCC.AHB1ENR.modifyIt:
+    it.GPIOAEN = true
+
+proc HAL_RCC_MCOConfig(rcc_mcox, rcc_mcosrc, rcc_mcodiv: uint32) =
+  HAL_RCC_GPIO_CLK_ENABLE()
+  #speed, type, afr, mode
+  setGPIOxPinySpeed(GPIO.a, gp8, gsVeryHigh)
+  setGPIOxPinyOutputType(GPIO.a, gp8, gotPushPull)
+  setGPIOxPinyAFR(GPIO.a, gp8, afSystem)
+  setGPIOxPinyMode(GPIO.a, gp8, gmAlternateFunc)
+
   
 
 
@@ -100,7 +112,7 @@ proc initClock() =
     while msticks - start < 2: discard
 
   RCC.CR.modifyIt:
-    PLLON = false
+    it.PLLON = false
 
     let start = msticks
     while msticks - start < 2: discard
@@ -113,7 +125,7 @@ proc initClock() =
     it.PLLQ = 7
 
   RCC.CR.modifyIt:
-    PLLON = true
+    it.PLLON = true
 
     let start = msticks
     while msticks - start < 2: discard
@@ -131,7 +143,7 @@ proc initClock() =
     it.SW = 0b10
 
     let start = msticks
-    while RCC.CFGR.read().SWS != 0b10
+    while RCC.CFGR.read().SWS != 0b10:
       if msticks - start < 5000: break
 
   if FLASH.ACR.read().LATENCY > 0x05:
@@ -139,11 +151,11 @@ proc initClock() =
       it.LATENCY = 0x05
     
   RCC.CFGR.modifyIt:
-    PPRE1 = 0b101
-    PPRE2 = 0b100
+    it.PPRE1 = 0b101
+    it.PPRE2 = 0b100
 
   sysClockFreq = HAL_RCC_GetSysClockFreq()
-  HAL_initTick(uwTickPrio)
+  discard HAL_initTick(uwTickPrio)
 
 
 
